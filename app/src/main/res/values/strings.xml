@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">My Application</string>
+    <string name="title_home">Botones</string>
+    <string name="title_dashboard">Mi Lista</string>
+    <string name="title_notifications">Alertas</string>
+    <string name="title_activity_mapa">Map</string>
+</resources>

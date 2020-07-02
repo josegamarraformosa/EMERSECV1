@@ -1,22 +1,28 @@
 package com.example.myapplication;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
+import android.Manifest;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
+import android.widget.Toast;
+
+import com.example.myapplication.ui.home.HomeFragment;
 
 
-public class EmerSec extends AppCompatActivity {
+public class Registro extends AppCompatActivity {
 
     private Button boton;
     private EditText textView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_emer_sec);
+        setContentView(R.layout.registro);
         getSupportActionBar().setTitle("EmerSec");
 
         textView=findViewById(R.id.nombre);
@@ -24,7 +30,14 @@ public class EmerSec extends AppCompatActivity {
         boton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                finish();
+                if (textView.getText().toString().equals("") ) {
+                    Toast.makeText(getApplicationContext(),"Debe ingresar un nombre",Toast.LENGTH_SHORT).show();
+
+                } else {
+                   HomeFragment.emersec.setNombreUsuario(textView.getText().toString().toUpperCase());
+                    finish();
+                }
+
             }
         });
 

@@ -1,5 +1,6 @@
 package com.example.myapplication;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
@@ -7,11 +8,13 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.view.MenuItemCompat;
 
 import android.Manifest;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.view.ActionMode;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -41,6 +44,8 @@ import java.util.zip.Inflater;
 
 
 public class SeleccionarContactos extends AppCompatActivity {
+
+    Miadaptador adaptador;
     ArrayList<Contacto> contactos;
     private ListView lista;
     @Override
@@ -49,13 +54,14 @@ public class SeleccionarContactos extends AppCompatActivity {
         setContentView(R.layout.activity_seleccionar_contactos);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setTitle("Agregar contactos");
+        getSupportActionBar().setTitle("Agregar a la Lista");
+
 
         lista=findViewById(R.id.lista_contactos);
 
 
        contactos=obtenerContactos();
-        Miadaptador adaptador = new Miadaptador(getApplicationContext(),contactos);
+       adaptador = new Miadaptador(getApplicationContext(),contactos);
 
 
         lista.setAdapter(adaptador);
@@ -88,16 +94,56 @@ public class SeleccionarContactos extends AppCompatActivity {
        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
            @Override
            public boolean onQueryTextSubmit(String query) {
+
                return false;
            }
 
            @Override
            public boolean onQueryTextChange(String newText) {
+               adaptador.filter(newText);
+
                return false;
            }
        });
         return super.onCreateOptionsMenu(menu);
     }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch(item.getItemId()){
+            case R.id.ok:
+                SharedPreferences preferencia= getSharedPreferences("lista_contactos",MODE_PRIVATE);
+                Map <String,?> caca =preferencia.getAll();
+
+                SharedPreferences.Editor editor = preferencia.edit();
+                int contador=0;
+                for (int i=0;i<contactos.size();i++){
+                    if (contactos.get(i).isCheck()){
+                        String nombre = contactos.get(i).getNombre();
+                        String numero = contactos.get(i).getNumero();
+                        editor.putString(nombre,numero);
+                         contador++;
+                    }
+                }
+                if ((caca.size() + contador)>5 ) {
+                    Toast.makeText(getApplicationContext(),"La LISTA DE EMERGENCIA no puede contener mas de 5 contactos",Toast.LENGTH_SHORT).show();
+                } else {
+                    editor.apply();
+                }
+
+
+                finish();
+            case android.R.id.home:
+                finish();
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+
+    }
+
+
+
+
 
     private ArrayList<Contacto> obtenerContactos() {
         ArrayList<Contacto> lista= new ArrayList<>();

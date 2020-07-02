@@ -6,24 +6,33 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.TextView;
 
 import com.example.myapplication.ui.Contacto;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
-public class Miadaptador extends BaseAdapter {
-    Context context;
-    ArrayList<Contacto> datos;
+public class Miadaptador extends BaseAdapter  {
+    private Context context;
+    private ArrayList<Contacto> datosOriginal;
+    private ArrayList<Contacto> arraylist=null;
+  /*  private ArrayList<MyBean> myList;  // for loading main list
+    private ArrayList<MyBean> arraylist=null;*/
 
     public Miadaptador(Context context, ArrayList<Contacto> datos) {
         this.context = context;
-        this.datos = datos;
+        this.datosOriginal = datos;
+        this.arraylist= new ArrayList<Contacto>();
+        this.arraylist.addAll(datosOriginal);
+
     }
 
     @Override
     public int getCount() {
-        return datos.size();
+        return datosOriginal.size();
     }
 
     @Override
@@ -44,11 +53,30 @@ public class Miadaptador extends BaseAdapter {
         TextView numero= convertView.findViewById(R.id.texto2);
         CheckBox checkbox= convertView.findViewById(R.id.check);
 
-        nombre.setText(datos.get(position).getNombre());
-        numero.setText(datos.get(position).getNumero());
+        nombre.setText(datosOriginal.get(position).getNombre());
+        numero.setText(datosOriginal.get(position).getNumero());
 
-        checkbox.setChecked(datos.get(position).isCheck());
+        checkbox.setChecked(datosOriginal.get(position).isCheck());
 
         return convertView;
     }
+
+    public void filter(String charText) {
+        charText = charText.toLowerCase(Locale.getDefault());
+        datosOriginal.clear();
+        if (charText.length() == 0) {
+            datosOriginal.addAll(arraylist);
+        }
+        else
+        {
+            for (Contacto wp : arraylist) {
+                if (wp.getNombre().toLowerCase(Locale.getDefault()).contains(charText)) {
+                    datosOriginal.add(wp);
+                }
+            }
+        }
+        notifyDataSetChanged();
+    }
+
 }
+

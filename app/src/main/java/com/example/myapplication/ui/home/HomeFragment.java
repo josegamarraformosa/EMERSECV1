@@ -1,6 +1,11 @@
 package com.example.myapplication.ui.home;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.location.LocationListener;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -12,35 +17,53 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.location.LocationManagerCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
+import com.example.myapplication.Emersec;
 import com.example.myapplication.R;
 
 public class HomeFragment extends Fragment {
 
-    private HomeViewModel homeViewModel;
-
+    Button buttonInseguridad,buttonViolencia,buttonSalud;
+    public static Emersec emersec;
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        homeViewModel =
-                ViewModelProviders.of(this).get(HomeViewModel.class);
+
         View root = inflater.inflate(R.layout.fragment_home, container, false);
-        homeViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String s) {
 
-            }
-        });
+        emersec = new Emersec(getActivity());
 
-        Button button=(Button) root.findViewById(R.id.button);
-        button.setOnClickListener(new View.OnClickListener() {
+        buttonInseguridad=(Button) root.findViewById(R.id.button);
+        buttonViolencia= (Button) root.findViewById(R.id.abuso);
+        buttonSalud= (Button) root.findViewById(R.id.salud);
+
+
+        buttonInseguridad.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getContext(),"caca",Toast.LENGTH_LONG).show();
+                emersec.enviarAlerta("INSEGURIDAD");
             }
         });
+
+        buttonViolencia.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                emersec.enviarAlerta("VIOLENCIA");
+            }
+        });
+
+        buttonSalud.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                emersec.enviarAlerta("SALUD");
+            }
+        });
+
+
+
         setHasOptionsMenu(true);
         return root;
     }

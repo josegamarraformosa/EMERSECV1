@@ -7,5 +7,8 @@
         android:icon="@drawable/ic_info"
         android:title="Info"
         app:showAsAction="always" />
+    <item android:id="@+id/restablecernombre"
+        android:title="Restablecer nombre"
+        app:showAsAction="never" />
 
 </menu>

@@ -16,9 +16,21 @@ import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.myapplication.ui.Contacto;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Map;
 
 public class Emersec {
@@ -56,7 +68,13 @@ public class Emersec {
                mensajeria.sendTextMessage(numero,null,mensaje1,null,null);
 
            }
-        Toast.makeText(activity,"Mensaje Enviado",Toast.LENGTH_SHORT).show();
+
+           try {
+               registrarDatos(tipoDeEmergencia);
+           } catch (JSONException e) {
+               e.printStackTrace();
+           }
+           Toast.makeText(activity,"Mensaje Enviado",Toast.LENGTH_SHORT).show();
 
        }
 
@@ -66,8 +84,9 @@ public class Emersec {
 
         Double lat= Math.round(MainActivity.ultimaUbicacion.getLatitude()*100000d) /100000d;
         Double  lon= Math.round(MainActivity.ultimaUbicacion.getLongitude()*100000d) /100000d;
-        String mensaje = getNombreUsuario() + " esta sufriendo un problema de " + alerta + ". " +
-                "Ver ubicacion: https://www.google.com/maps/dir/" +lat+","+lon;
+        String nombre=getNombreUsuario();
+        String mensaje = nombre + " esta sufriendo un problema de " + alerta + ". " +
+                "Ver ubicacion: https://emersec.github.io/?lat="+lat+"&lon="+lon+"&n="+nombre;
 
         return mensaje;
 
@@ -85,6 +104,7 @@ public class Emersec {
         SharedPreferences preferencias = activity.getSharedPreferences("nombreUsuario",Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferencias.edit();
         editor.putString("nombre",nombreUsuario);
+        editor.putBoolean("registrado",true);
         editor.apply();
         this.nombreUsuario = nombreUsuario;
     }
@@ -102,6 +122,85 @@ public class Emersec {
            listaDeEmergencia.add(new Contacto(entrada.getKey(),entrada.getValue().toString(),false));
        }
    }
+
+    private void registrarDatos(final String tipoEmergencia) throws JSONException {
+
+        RequestQueue solicitud = Volley.newRequestQueue(activity);
+        String url ="https://extendsclass.com/api/json-storage/bin/cedccbf";
+        StringRequest stringSolicitud= new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                try {
+                    actualizarDatos(response,tipoEmergencia);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        });
+        stringSolicitud.setShouldCache(false);
+        solicitud.add(stringSolicitud);
+    }
+    private void actualizarDatos( String datos, String tipoDeEmergencia) throws JSONException {
+
+        Calendar calendario= Calendar.getInstance();
+        SimpleDateFormat simpleDateFormat= new SimpleDateFormat("hh:mm:ss");
+        String hora=simpleDateFormat.format(calendario.getTime());
+
+        simpleDateFormat=new SimpleDateFormat("dd-MM-yyyy");
+        String fecha=simpleDateFormat.format(calendario.getTime());
+
+        String nombre= getNombreUsuario();
+
+        JSONObject json2=new JSONObject();
+
+        //fecha y hora
+        json2.put("usuario",nombre);
+        json2.put("hora",hora);
+        json2.put("fecha",fecha);
+        json2.put("tipo",tipoDeEmergencia);
+        //ubicacion
+
+
+        double lat= Math.round(MainActivity.ultimaUbicacion.getLatitude()*100000d) /100000d;
+        double lon= Math.round(MainActivity.ultimaUbicacion.getLongitude()*100000d) /100000d;
+
+        json2.accumulate("ubicacion",String.valueOf(lat));
+        json2.accumulate("ubicacion",String.valueOf(lon));
+
+
+
+        JSONObject json= new JSONObject(datos);
+
+        json.accumulate("alertas",json2);
+
+
+
+
+
+        RequestQueue solicitud = Volley.newRequestQueue(activity);
+        String url ="https://extendsclass.com/api/json-storage/bin/cedccbf";
+        JsonObjectRequest stringSolicitud= new JsonObjectRequest(Request.Method.PATCH, url,json, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        });
+
+        stringSolicitud.setShouldCache(false);
+        solicitud.add(stringSolicitud);
+    }
 
 
 

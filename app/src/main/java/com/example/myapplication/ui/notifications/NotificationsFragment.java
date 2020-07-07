@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -38,6 +39,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class NotificationsFragment extends Fragment {
     GoogleMap map;
@@ -92,13 +95,14 @@ public class NotificationsFragment extends Fragment {
     }
 
     public void traerDatos(){
+        //traemos las alertas
         RequestQueue solicitud = Volley.newRequestQueue(getContext());
-        String url ="https://extendsclass.com/api/json-storage/bin/cedccbf";
+        String url ="https://jsonbin.org/josegamarraformosa/emersec";
         StringRequest stringSolicitud= new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 try {
-                    alertas=new JSONObject(response).getJSONArray("alertas");
+                    alertas=new JSONArray(response);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -109,7 +113,14 @@ public class NotificationsFragment extends Fragment {
             public void onErrorResponse(VolleyError error) {
 
             }
-        });
+        }){
+            @Override
+            public Map<String,String> getHeaders () throws AuthFailureError {
+                Map <String,String> header= new HashMap<String,String>();
+                header.put("authorization","token a81b18d2-4616-4936-9c64-4ec43de6b493");
+                return header;
+            }
+        };
         stringSolicitud.setShouldCache(false);
         solicitud.add(stringSolicitud);
     }

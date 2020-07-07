@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -31,6 +32,7 @@ import org.json.JSONObject;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Map;
 
 public class Emersec {
@@ -65,12 +67,13 @@ public class Emersec {
            for (Contacto contacto:listaDeEmergencia){
                String numero= contacto.getNumero();
 
+
                mensajeria.sendTextMessage(numero,null,mensaje1,null,null);
 
            }
 
            try {
-               registrarDatos(tipoDeEmergencia);
+               registrarAlerta(tipoDeEmergencia);
            } catch (JSONException e) {
                e.printStackTrace();
            }
@@ -123,84 +126,59 @@ public class Emersec {
        }
    }
 
-    private void registrarDatos(final String tipoEmergencia) throws JSONException {
-
-        RequestQueue solicitud = Volley.newRequestQueue(activity);
-        String url ="https://extendsclass.com/api/json-storage/bin/cedccbf";
-        StringRequest stringSolicitud= new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                try {
-                    actualizarDatos(response,tipoEmergencia);
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-
-            }
-        });
-        stringSolicitud.setShouldCache(false);
-        solicitud.add(stringSolicitud);
-    }
-    private void actualizarDatos( String datos, String tipoDeEmergencia) throws JSONException {
-
+    private void registrarAlerta( String tipoDeEmergencia) throws JSONException {
+        //averiguar fecha
         Calendar calendario= Calendar.getInstance();
         SimpleDateFormat simpleDateFormat= new SimpleDateFormat("hh:mm:ss");
         String hora=simpleDateFormat.format(calendario.getTime());
-
         simpleDateFormat=new SimpleDateFormat("dd-MM-yyyy");
         String fecha=simpleDateFormat.format(calendario.getTime());
 
+
         String nombre= getNombreUsuario();
 
-        JSONObject json2=new JSONObject();
+        JSONObject json=new JSONObject();
 
         //fecha y hora
-        json2.put("usuario",nombre);
-        json2.put("hora",hora);
-        json2.put("fecha",fecha);
-        json2.put("tipo",tipoDeEmergencia);
+        json.put("usuario",nombre);
+        json.put("hora",hora);
+        json.put("fecha",fecha);
+        //tipo de emergencia
+        json.put("tipo",tipoDeEmergencia);
+
         //ubicacion
-
-
         double lat= Math.round(MainActivity.ultimaUbicacion.getLatitude()*100000d) /100000d;
         double lon= Math.round(MainActivity.ultimaUbicacion.getLongitude()*100000d) /100000d;
 
-        json2.accumulate("ubicacion",String.valueOf(lat));
-        json2.accumulate("ubicacion",String.valueOf(lon));
-
-
-
-        JSONObject json= new JSONObject(datos);
-
-        json.accumulate("alertas",json2);
-
-
-
+        json.accumulate("ubicacion",String.valueOf(lat));
+        json.accumulate("ubicacion",String.valueOf(lon));
 
 
         RequestQueue solicitud = Volley.newRequestQueue(activity);
-        String url ="https://extendsclass.com/api/json-storage/bin/cedccbf";
+        String url ="https://jsonbin.org/josegamarraformosa/emersec";
         JsonObjectRequest stringSolicitud= new JsonObjectRequest(Request.Method.PATCH, url,json, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-
+                //Toast.makeText(activity, response.toString(), Toast.LENGTH_SHORT).show();
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-
+                //Toast.makeText(activity, error.toString(), Toast.LENGTH_SHORT).show();
             }
-        });
+        }){
+            @Override
+            public Map<String,String> getHeaders () throws AuthFailureError {
+                Map <String,String> header= new HashMap<String,String>();
+                header.put("authorization","token a81b18d2-4616-4936-9c64-4ec43de6b493");
+                return header;
+            }
+        };
 
         stringSolicitud.setShouldCache(false);
         solicitud.add(stringSolicitud);
     }
+
 
 
 

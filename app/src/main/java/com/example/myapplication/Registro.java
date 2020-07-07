@@ -26,6 +26,7 @@ public class Registro extends AppCompatActivity {
         getSupportActionBar().setTitle("EmerSec");
 
         textView=findViewById(R.id.nombre);
+
         boton=findViewById(R.id.aceptar);
         boton.setOnClickListener(new View.OnClickListener() {
             @Override

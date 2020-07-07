@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <item android:id="@+id/todo"
-        android:title="Todos" />
+    <item android:id="@+id/todas"
+        android:title="Todas las Alertas" />
     <item android:id="@+id/inseguridad"
         android:title="Inseguridad" />
+    <item android:id="@+id/violencia"
+        android:title="Violencia" />
     <item android:id="@+id/salud"
         android:title="Salud" />
-    <item android:id="@+id/abuso"
-        android:title="Abuso" />
-
 </menu>

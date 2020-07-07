@@ -4,9 +4,11 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,32 +16,41 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.myapplication.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class NotificationsFragment extends Fragment {
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-    private NotificationsViewModel notificationsViewModel;
+import java.util.ArrayList;
+
+public class NotificationsFragment extends Fragment {
+    GoogleMap map;
+    JSONArray alertas;
+
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        notificationsViewModel =
-                ViewModelProviders.of(this).get(NotificationsViewModel.class);
-        View root = inflater.inflate(R.layout.fragment_notifications, container, false);
-        //final TextView textView = root.findViewById(R.id.text_notifications);
-        notificationsViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String s) {
-               // textView.setText(s);
-            }
-        });
-        setHasOptionsMenu(true);
 
+        View root = inflater.inflate(R.layout.fragment_notifications, container, false);
+
+        traerDatos();
+        setHasOptionsMenu(true);
         return root;
     }
     private OnMapReadyCallback callback = new OnMapReadyCallback() {
@@ -55,8 +66,9 @@ public class NotificationsFragment extends Fragment {
          */
         @Override
         public void onMapReady(GoogleMap googleMap) {
+            map=googleMap;
+
             LatLng formosa = new LatLng(-26.1775303, -58.1781387);
-            googleMap.addMarker(new MarkerOptions().position(formosa).title("Marker in Sydney"));
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(formosa,13f));
         }
     };
@@ -66,7 +78,7 @@ public class NotificationsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        SupportMapFragment mapFragment =
+       SupportMapFragment mapFragment =
                 (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         if (mapFragment != null) {
             mapFragment.getMapAsync(callback);
@@ -77,5 +89,144 @@ public class NotificationsFragment extends Fragment {
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         inflater.inflate(R.menu.mapa,menu);
         super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    public void traerDatos(){
+        RequestQueue solicitud = Volley.newRequestQueue(getContext());
+        String url ="https://extendsclass.com/api/json-storage/bin/cedccbf";
+        StringRequest stringSolicitud= new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                try {
+                    alertas=new JSONObject(response).getJSONArray("alertas");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        });
+        stringSolicitud.setShouldCache(false);
+        solicitud.add(stringSolicitud);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.violencia:
+                try {
+                    filtrarAlertas("violencia");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return true;
+            case R.id.inseguridad:
+                try {
+                    filtrarAlertas("inseguridad");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return true;
+            case R.id.salud:
+                try {
+                    filtrarAlertas("salud");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return true;
+            case R.id.todas:
+                try {
+                    mostrarTodasLasAlertas();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+
+    }
+
+    public void filtrarAlertas(String tipoDeAlerta) throws JSONException {
+
+        //si el mapa ya esta cargado podemos filtrarlo sino no
+        if (map!=null){
+            map.clear();
+            //Se establece el color del marcador segun el tipo de violencia
+            BitmapDescriptor colorMarcador;
+            switch (tipoDeAlerta){
+                case "inseguridad":
+                    colorMarcador=BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED);
+                    break;
+                case "violencia":
+                    colorMarcador=BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE);
+                    break;
+                default:
+                    colorMarcador=BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW);
+            }
+
+
+            JSONObject alerta;
+
+            for(int i=0;i<alertas.length();i++){
+
+                alerta=alertas.getJSONObject(i);
+                String tipo= alerta.getString("tipo");
+                if(tipo.equalsIgnoreCase(tipoDeAlerta)){
+                    JSONArray ubicacion=alerta.getJSONArray("ubicacion");
+                    LatLng latlng= new LatLng(ubicacion.getDouble(0),ubicacion.getDouble(1));
+                    map.addMarker(new MarkerOptions().position(latlng).icon(colorMarcador).title(tipoDeAlerta).snippet("jeje caca"));
+                }
+
+            }
+
+
+        } else {
+            Toast.makeText(getContext(),"Espere a que el mapa termine de cargar",Toast.LENGTH_SHORT);
+        }
+
+
+    }
+    public void mostrarTodasLasAlertas() throws JSONException {
+
+        //verificamos que el mapa ya esta cargado
+        if (map!=null){
+            map.clear();
+
+            JSONObject alerta;
+
+            for(int i=0;i<alertas.length();i++){
+
+                alerta=alertas.getJSONObject(i);
+                String tipoDeAlerta= alerta.getString("tipo");
+
+                //Se establece el color del marcador segun el tipo de violencia
+                BitmapDescriptor colorMarcador;
+                switch (tipoDeAlerta){
+                    case "INSEGURIDAD":
+                        colorMarcador=BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED);
+                        break;
+                    case "VIOLENCIA":
+                        colorMarcador=BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE);
+                        break;
+                    default:
+                        colorMarcador=BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW);
+                }
+
+                    JSONArray ubicacion=alerta.getJSONArray("ubicacion");
+                    LatLng latlng= new LatLng(ubicacion.getDouble(0),ubicacion.getDouble(1));
+                    map.addMarker(new MarkerOptions().position(latlng).icon(colorMarcador).title(tipoDeAlerta));
+
+
+            }
+
+
+        } else {
+            Toast.makeText(getContext(),"Espere a que el mapa termine de cargar",Toast.LENGTH_SHORT);
+        }
     }
 }

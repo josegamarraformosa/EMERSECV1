@@ -1,18 +1,17 @@
 package com.example.myapplication;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 
-import android.Manifest;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.example.myapplication.ui.home.HomeFragment;
+import com.example.myapplication.ui.botones.HomeFragment;
 
 
+//Esta es la clase de registro del usuario. No se me ocurrió otro nombre mas representativo xd
 public class Registro extends AppCompatActivity {
 
     private Button boton;
@@ -23,6 +22,7 @@ public class Registro extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.registro);
+
         getSupportActionBar().setTitle("EmerSec");
 
         textView=findViewById(R.id.nombre);

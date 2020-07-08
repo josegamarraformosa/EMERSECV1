@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.dashboard;
+package com.example.myapplication.ui.milista;
 
 import android.content.Context;
 import android.content.Intent;
@@ -12,29 +12,16 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
-import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.Toolbar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProviders;
 
-import com.example.myapplication.Miadaptador;
 import com.example.myapplication.Miadaptador2;
 import com.example.myapplication.R;
-import com.example.myapplication.SeleccionarContactos;
-import com.example.myapplication.ui.Contacto;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 public class DashboardFragment extends Fragment {

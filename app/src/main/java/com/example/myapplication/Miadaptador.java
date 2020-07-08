@@ -6,15 +6,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
-import android.widget.Filter;
-import android.widget.Filterable;
 import android.widget.TextView;
 
-import com.example.myapplication.ui.Contacto;
+import com.example.myapplication.ui.milista.Contacto;
 
 import java.util.ArrayList;
 import java.util.Locale;
 
+
+//Esta es una clase adaptador para manejar las listas, esta medio raro porque todavia no entiendo mjuy bien como funciona
 public class Miadaptador extends BaseAdapter  {
     private Context context;
     private ArrayList<Contacto> datosOriginal;

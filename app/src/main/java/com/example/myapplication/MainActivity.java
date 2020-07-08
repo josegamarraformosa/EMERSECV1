@@ -31,6 +31,9 @@ import androidx.navigation.ui.NavigationUI;
 
 import java.util.prefs.Preferences;
 
+
+/*esta es la clase principal de la interfaz, que hace de intermediario entre los demas fragmentos.
+Tambien es la encargada de pedir los permisos al usuario.*/
 public class MainActivity extends AppCompatActivity {
 
     public LocationManager locationManager;
@@ -40,17 +43,17 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        //verificamos si el usuario ya se encuentra registrado
         boolean existeNombreUsuario = getSharedPreferences("nombreUsuario",Context.MODE_PRIVATE).getBoolean("registrado",false);
-
         if (!existeNombreUsuario){
             startActivity(new Intent(getApplicationContext(),Registro.class));
         }
 
-
+        //pedimos los permisos al usuario
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_CONTACTS, Manifest.permission.SEND_SMS,
                 Manifest.permission.INTERNET,Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION }, 3);
 
-       // ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 3);
+
 
         setContentView(R.layout.activity_main);
         BottomNavigationView navView = findViewById(R.id.nav_view);
@@ -66,24 +69,12 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(navView, navController);
 
 
-        //obtenerUbicacion();
-
-
-    }
-
-    public void obtenerUbicacion() {
-
-
-
-
-
-
-
-
 
 
 
     }
+
+
 
     @Override
     protected void onPause() {
@@ -91,6 +82,8 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    //Este metodo es un Listener que se activa cuando el usuario nos acepta el permiso de usar el GPS
+    //si es asi obtenemos su ubicacion GPS
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);

@@ -1,6 +1,8 @@
-package com.example.myapplication.ui;
+package com.example.myapplication.ui.milista;
 
+//esta es una clase para manejar los datos relacionados a los contactos del celular, cada instancia representa un contacto
 public class Contacto {
+
     String nombre;
     String numero;
     boolean check;

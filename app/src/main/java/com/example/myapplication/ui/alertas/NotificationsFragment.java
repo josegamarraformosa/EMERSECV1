@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.notifications;
+package com.example.myapplication.ui.alertas;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -7,14 +7,11 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProviders;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -26,7 +23,6 @@ import com.android.volley.toolbox.Volley;
 import com.example.myapplication.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
@@ -38,7 +34,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -70,7 +65,7 @@ public class NotificationsFragment extends Fragment {
         @Override
         public void onMapReady(GoogleMap googleMap) {
             map=googleMap;
-
+            //una vez que un mapa termina de cargar hacemos zoom en formosa capital
             LatLng formosa = new LatLng(-26.1775303, -58.1781387);
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(formosa,13f));
         }
@@ -95,7 +90,7 @@ public class NotificationsFragment extends Fragment {
     }
 
     public void traerDatos(){
-        //traemos las alertas
+        //traemos las alertas con una solititud HTTP
         RequestQueue solicitud = Volley.newRequestQueue(getContext());
         String url ="https://jsonbin.org/josegamarraformosa/emersec";
         StringRequest stringSolicitud= new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
@@ -166,6 +161,7 @@ public class NotificationsFragment extends Fragment {
 
         //si el mapa ya esta cargado podemos filtrarlo sino no
         if (map!=null){
+            //limpiamos el mapá de cualquier marcador que contenga
             map.clear();
             //Se establece el color del marcador segun el tipo de violencia
             BitmapDescriptor colorMarcador;
@@ -182,11 +178,13 @@ public class NotificationsFragment extends Fragment {
 
 
             JSONObject alerta;
-
+            //recorremos todas las alertas registradas
             for(int i=0;i<alertas.length();i++){
 
                 alerta=alertas.getJSONObject(i);
                 String tipo= alerta.getString("tipo");
+
+                //filtramos las alertas por el tipo deseado y la colocamos en el mapa
                 if(tipo.equalsIgnoreCase(tipoDeAlerta)){
                     JSONArray ubicacion=alerta.getJSONArray("ubicacion");
                     LatLng latlng= new LatLng(ubicacion.getDouble(0),ubicacion.getDouble(1));
@@ -203,7 +201,7 @@ public class NotificationsFragment extends Fragment {
 
     }
     public void mostrarTodasLasAlertas() throws JSONException {
-
+        //muestra todas las alertas en el mapa
         //verificamos que el mapa ya esta cargado
         if (map!=null){
             map.clear();
@@ -228,8 +226,11 @@ public class NotificationsFragment extends Fragment {
                         colorMarcador=BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW);
                 }
 
+                //obtenemos la latitud y longitud de la alerta para el colocarle al marcador
                     JSONArray ubicacion=alerta.getJSONArray("ubicacion");
                     LatLng latlng= new LatLng(ubicacion.getDouble(0),ubicacion.getDouble(1));
+
+                    //agregamos el marcador en el mapa
                     map.addMarker(new MarkerOptions().position(latlng).icon(colorMarcador).title(tipoDeAlerta));
 
 

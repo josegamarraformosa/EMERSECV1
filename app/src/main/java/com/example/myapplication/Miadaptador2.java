@@ -1,7 +1,6 @@
 package com.example.myapplication;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,11 +9,13 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 
-import com.example.myapplication.ui.Contacto;
-import com.example.myapplication.ui.dashboard.DashboardFragment;
+import com.example.myapplication.ui.milista.Contacto;
+import com.example.myapplication.ui.milista.DashboardFragment;
 
 import java.util.ArrayList;
 
+
+//esta es otra clase adaptador, esta mal que haya dos ya sé... Pero metodologia agil xd
 public class Miadaptador2 extends BaseAdapter {
     Context context;
     ArrayList<Contacto> datos;

@@ -2,15 +2,10 @@ package com.example.myapplication;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.location.Criteria;
-import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.Bundle;
 import android.telephony.SmsManager;
 import android.widget.Toast;
 
@@ -22,9 +17,8 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.example.myapplication.ui.Contacto;
+import com.example.myapplication.ui.milista.Contacto;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,6 +29,13 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
+
+//esta clase maneja toda la logica de la aplicacion, los datos.
+
+//--Establecer la lista de contactos de emergencia
+//--Establecer el nombre del usuario
+//--Mandar las alertas por SMS
+//--Registrar la alerta
 public class Emersec {
     private String nombreUsuario;
     private Activity activity;
@@ -49,30 +50,35 @@ public class Emersec {
 
     }
    public void enviarAlerta(String tipoDeEmergencia){
+        //antes de enviar la alerta verificamos que tenga contactos en su lista de emergencia
         actualizarlistaDeEmergencia();
         if (listaDeEmergencia.size()==0){
             Toast.makeText(activity, "No tiene contactos en su lista de emegerencia", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        //verificamos que tenemos permiso para mandar SMS sino lo solicitamos
        if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED){
            ActivityCompat.requestPermissions(activity,new String[]{
                    Manifest.permission.SEND_SMS},1);
            Toast.makeText(activity,"Mensaje NO enviado.", Toast.LENGTH_SHORT).show();
        } else {
+
            SmsManager mensajeria= SmsManager.getDefault();
 
+           //creamos la alerta que se mandara por SMS
            String mensaje1 =  crearMensaje(tipoDeEmergencia);
 
+           //recorremos la lista de contactos de emergencia mandando la alerta a cada uno de ellos
            for (Contacto contacto:listaDeEmergencia){
                String numero= contacto.getNumero();
-
 
                mensajeria.sendTextMessage(numero,null,mensaje1,null,null);
 
            }
 
            try {
+            //una vez mandada la alerta por SMS registramos la alerta en INTERNET
                registrarAlerta(tipoDeEmergencia);
            } catch (JSONException e) {
                e.printStackTrace();
@@ -84,7 +90,7 @@ public class Emersec {
    }
 
     private String crearMensaje(String alerta) {
-
+        //Creamos la cadena de texto que se mandara como SMS
         Double lat= Math.round(MainActivity.ultimaUbicacion.getLatitude()*100000d) /100000d;
         Double  lon= Math.round(MainActivity.ultimaUbicacion.getLongitude()*100000d) /100000d;
         String nombre=getNombreUsuario();
@@ -95,6 +101,7 @@ public class Emersec {
 
     }
 
+    //Estos dos metodos no se para que estan pero no los borro por las dudas
     public void add(Contacto contacto){
        listaDeEmergencia.add(contacto);
    }
@@ -103,7 +110,10 @@ public class Emersec {
        listaDeEmergencia.remove(contacto);
    }
 
+   //Metodo para establecer o reestablecer el nombre de usuario
     public void setNombreUsuario(String nombreUsuario) {
+
+        //entramos en los datos de preferencia del celular y registamos el usuario
         SharedPreferences preferencias = activity.getSharedPreferences("nombreUsuario",Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferencias.edit();
         editor.putString("nombre",nombreUsuario);
@@ -112,13 +122,14 @@ public class Emersec {
         this.nombreUsuario = nombreUsuario;
     }
 
+    //obtenemos el nombre del usuario
     public String getNombreUsuario() {
         SharedPreferences preferencias = activity.getSharedPreferences("nombreUsuario",Context.MODE_PRIVATE);
         return preferencias.getString("nombre","");
     }
 
+    //Metodo para actualizar la variable listaDeEmergencia de esta clase con las preferenciadas guardadas del celular
     private void actualizarlistaDeEmergencia(){
-
        SharedPreferences preferencia= activity.getSharedPreferences("lista_contactos",activity.MODE_PRIVATE);
        Map<String, ?> todo = preferencia.getAll();
        for (Map.Entry <String,?> entrada:todo.entrySet()){
@@ -126,8 +137,10 @@ public class Emersec {
        }
    }
 
+   //metodo para registrar la alerta en internet con un objeto JSON
+
     private void registrarAlerta( String tipoDeEmergencia) throws JSONException {
-        //averiguar fecha
+        //averiguar fecha y hora
         Calendar calendario= Calendar.getInstance();
         SimpleDateFormat simpleDateFormat= new SimpleDateFormat("hh:mm:ss");
         String hora=simpleDateFormat.format(calendario.getTime());
@@ -137,6 +150,7 @@ public class Emersec {
 
         String nombre= getNombreUsuario();
 
+        //instanciamos un objeto JSON donde iremos guardando los distintos datos relacionaos con la alerta
         JSONObject json=new JSONObject();
 
         //fecha y hora
@@ -154,6 +168,7 @@ public class Emersec {
         json.accumulate("ubicacion",String.valueOf(lon));
 
 
+        //Iniciamos una peticion HTTP y le mandamos el JSON de la alerta a registrar
         RequestQueue solicitud = Volley.newRequestQueue(activity);
         String url ="https://jsonbin.org/josegamarraformosa/emersec";
         JsonObjectRequest stringSolicitud= new JsonObjectRequest(Request.Method.PATCH, url,json, new Response.Listener<JSONObject>() {

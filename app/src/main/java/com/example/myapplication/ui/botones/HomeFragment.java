@@ -1,7 +1,9 @@
 package com.example.myapplication.ui.botones;
 
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -77,12 +79,35 @@ public class HomeFragment extends Fragment {
             case R.id.menuinfo:
                 new AlertDialog.Builder(getContext()).setIcon(R.drawable.ic_info_black)
                                                     .setTitle("Informacion")
-                                                    .setMessage("Acá se supone que va el tutorial de como se usa la app xD")
+                                                    .setMessage("Para mas informacion visite los siguientes enlaces.")
+                                                    .setNegativeButton("Manual", new DialogInterface.OnClickListener() {
+                                                        @Override
+                                                        public void onClick(DialogInterface dialog, int which) {
+                                                            goToUrl ( "https://drive.google.com/file/d/1_ZvLZWzH4z5hTLtCIG--GWJsvGQFukwu/view?usp=sharing");
+                                                        }
+                                                    })
+                                                    .setPositiveButton("Video tutorial", new DialogInterface.OnClickListener() {
+                                                        @Override
+                                                        public void onClick(DialogInterface dialog, int which) {
+                                                            goToUrl ("https://drive.google.com/file/d/11gZt1tIbYk_qynXYKQppjl3dBnkiGIVS/view?usp=sharing");
+                                                        }
+                                                    }).setNeutralButton("cancelar", new DialogInterface.OnClickListener() {
+                                                        @Override
+                                                        public void onClick(DialogInterface dialog, int which) {
+
+                                                        }
+                                                    })
                                                     .setCancelable(true).show();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void goToUrl (String url) {
+        Uri uriUrl = Uri.parse(url);
+        Intent launchBrowser = new Intent(Intent.ACTION_VIEW, uriUrl);
+        startActivity(launchBrowser);
     }
 
 
